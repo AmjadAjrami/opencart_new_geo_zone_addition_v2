@@ -1,0 +1,229 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <button type="submit" form="form-geo-zone" data-toggle="tooltip" title="{{ button_save }}"
+                        class="btn btn-primary"><i class="fa fa-save"></i></button>
+                <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i
+                            class="fa fa-reply"></i></a></div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid"> {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible"><i
+                        class="fa fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+            </div>
+            <div class="panel-body">
+                <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-geo-zone"
+                      class="form-horizontal">
+                    <div class="form-group required">
+                        <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}"
+                                   id="input-name" class="form-control"/>
+                            {% if error_name %}
+                                <div class="text-danger">{{ error_name }}</div>
+                            {% endif %} </div>
+                    </div>
+                    <div class="form-group required">
+                        <label class="col-sm-2 control-label" for="input-description">{{ entry_description }}</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="description" value="{{ description }}"
+                                   placeholder="{{ entry_description }}" id="input-description" class="form-control"/>
+                            {% if error_description %}
+                                <div class="text-danger">{{ error_description }}</div>
+                            {% endif %} </div>
+                    </div>
+                    <fieldset>
+                        <legend>{{ text_geo_zone }}</legend>
+                        <h4>{{ entry_country }}</h4>
+                        <div id="zone-to-geo-zone">
+                            <div style="padding: 10px;border: 1px solid #c1c0c0">
+                                <div id="search_field">
+                                    <input id="search_input" type="text" placeholder="Type to search"
+                                           class="form-control">
+                                </div>
+                                {% set zone_to_geo_zone_row = 0 %}
+                                {% set edit_zone_row = 0 %}
+                                {% set break = false %}
+                                <div id="countries" style="height: 125px;overflow:auto;margin-top: 15px">
+
+                                </div>
+                                <button id="check_all" type="button" class="btn btn-success">Check All</button>
+                                <button id="un_check_all" type="button" class="btn btn-warning">UnCheck All</button>
+                            </div>
+                            <br>
+                            <h4>{{ entry_zone }}</h4>
+                            <div style="padding: 10px;border: 1px solid #c1c0c0">
+                                <div id="search_field_2">
+                                    <input id="search_input_2" type="text" placeholder="Type to search"
+                                           class="form-control">
+                                </div>
+                                <div id="zones" style="height: 125px;overflow:auto;margin-top: 15px">
+                                    <ul id="all_zones">
+
+                                    </ul>
+                                </div>
+                                <button id="check_all_zone" type="button" class="btn btn-success">Check All</button>
+                                <button id="un_check_all_zone" type="button" class="btn btn-warning">UnCheck All</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            html = '<ul id="all_countries">';
+            {% for country in countries %}
+            {% if zone_to_geo_zones == 0 %}
+            html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>';
+            {% else %}
+            {% for zone_to_geo_zone in zone_to_geo_zones %}
+            {% if zone_to_geo_zone.country_id == country.country_id %}
+            html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}" checked="checked"> {{ country.name|escape('js') }}</label></li>';
+            {% else %}
+            html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>';
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            html += '</ul>'
+
+            $('#countries').append(html);
+
+            $('#search_input').keyup(function () {
+                var input = document.getElementById("search_input");
+                var filter = input.value.toUpperCase();
+                var countries = document.getElementById('all_countries');
+                var countries_li = countries.getElementsByTagName('li');
+                for (var i = 0; i < countries_li.length; i++) {
+                    var item = countries_li[i].getElementsByTagName("label")[0];
+                    var text_value = item.textContent || item.innerText;
+                    if (text_value.toUpperCase().indexOf(filter) > -1) {
+                        countries_li[i].style.display = "inline";
+                    } else {
+                        countries_li[i].style.display = "none";
+                    }
+                }
+            });
+
+            $('#search_input_2').keyup(function () {
+                var input = document.getElementById("search_input_2");
+                var filter = input.value.toUpperCase();
+                var zones = document.getElementById('all_zones');
+                var zones_li = zones.getElementsByTagName('li');
+                for (var i = 0; i < zones_li.length; i++) {
+                    var item = zones_li[i].getElementsByTagName("label")[0];
+                    var text_value = item.textContent || item.innerText;
+                    if (text_value.toUpperCase().indexOf(filter) > -1) {
+                        zones_li[i].style.display = "inline";
+                    } else {
+                        zones_li[i].style.display = "none";
+                    }
+                }
+            });
+
+            $('#check_all').on('click', function (){
+                $('.country_check_box').prop('checked', true);
+            });
+
+            $('#un_check_all').on('click', function (){
+                $('.country_check_box').prop('checked', false);
+            });
+
+            $('#check_all_zone').on('click', function (){
+                $('.zone_check_box').prop('checked', true);
+            });
+
+            $('#un_check_all_zone').on('click', function (){
+                $('.zone_check_box').prop('checked', false);
+            });
+        });
+
+        $(document).ready(function () {
+            var countries = document.getElementById('all_countries');
+            var countries_li = countries.getElementsByTagName('li');
+            var countries_checkboxes = countries.getElementsByTagName('input');
+            for (var i = 0; i < countries_checkboxes.length; i++) {
+                var item = countries_checkboxes[i].checked;
+                if (item) {
+                    $.ajax({
+                        url: 'index.php?route=localisation/country/country&user_token={{ user_token }}&country_id=' + countries_checkboxes[i].value,
+                        dataType: 'json',
+                        beforeSend: function () {
+                        },
+                        complete: function () {
+                        },
+                        success: function (json) {
+                            html = '';
+                            if (json['zone'] && json['zone'] != '') {
+                                for (i = 0; i < json['zone'].length; i++) {
+                                    html += '<li style="display: inline !important;" class="zone_country_' + json['zone'][i]['country_id'] + '"><label style="padding: 3px;"> <input class="zone_check_box" type="checkbox" name="zone_to_geo_zone[' + json['zone'][i]['country_id'] + '][zone_id][]" value="' + json['zone'][i]['zone_id'] + '" checked> ' + json['zone'][i]['name'] + '</label></li>';
+                                }
+                            }
+
+                            $('#all_zones').append(html);
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                        }
+                    });
+                }
+            }
+        });
+
+        $('#zone-to-geo-zone').on('change', 'input[name$=\'[country_id]\']', function () {
+            var element = this;
+            if (element.checked) {
+                if (element.value) {
+                    $.ajax({
+                        url: 'index.php?route=localisation/country/country&user_token={{ user_token }}&country_id=' + element.value,
+                        dataType: 'json',
+                        beforeSend: function () {
+                            $(element).prop('disabled', true);
+                            $('button[form=\'form-geo-zone\']').prop('disabled', true);
+                        },
+                        complete: function () {
+                            $(element).prop('disabled', false);
+                            $('button[form=\'form-geo-zone\']').prop('disabled', false);
+                        },
+                        success: function (json) {
+                            html = '';
+                            if (json['zone'] && json['zone'] != '') {
+                                for (i = 0; i < json['zone'].length; i++) {
+                                    html += '<li style="display: inline !important;" class="zone_country_' + json['zone'][i]['country_id'] + '"><label style="padding: 3px;"> <input class="zone_check_box" type="checkbox" name="zone_to_geo_zone[' + json['zone'][i]['country_id'] + '][zone_id][]" value="' + json['zone'][i]['zone_id'] + '"> ' + json['zone'][i]['name'] + '</label></li>';
+                                }
+                            }
+
+                            $('#all_zones').append(html);
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                        }
+                    });
+                }
+            } else {
+                var items = document.getElementsByClassName('zone_country_' + element.value);
+                for (var i = 0; i < items.length; i++) {
+                    items[i].style.display = 'none';
+                }
+            }
+        });
+    </script>
+</div>
+{{ footer }}
