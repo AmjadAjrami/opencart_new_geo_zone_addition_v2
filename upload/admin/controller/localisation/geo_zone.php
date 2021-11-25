@@ -339,8 +339,8 @@ class ControllerLocalisationGeoZone extends Controller
 
         if (isset($this->request->post['zone_to_geo_zone'])) {
             $items = [];
-            for ($i = 0; $i < count($this->request->post['zone_to_geo_zone']); $i++){
-                foreach ($this->request->post['zone_to_geo_zone'][$i]['zone_id'] as $item){
+            for ($i = 0; $i < count($this->request->post['zone_to_geo_zone']); $i++) {
+                foreach ($this->request->post['zone_to_geo_zone'][$i]['zone_id'] as $item) {
                     $items[] = [
                         'country_id' => $this->request->post['zone_to_geo_zone'][$i]['country_id'],
                         'zone_id' => $item,
@@ -350,7 +350,71 @@ class ControllerLocalisationGeoZone extends Controller
             }
             $data['zone_to_geo_zones'] = $items;
         } elseif (isset($this->request->get['geo_zone_id'])) {
-            $data['zone_to_geo_zones'] = $this->model_localisation_geo_zone->getZoneToGeoZones($this->request->get['geo_zone_id']);
+            if ($this->model_localisation_geo_zone->getZoneToGeoZones($this->request->get['geo_zone_id']) == null) {
+                $data['zone_to_geo_zones'] = 0;
+            } else {
+                $data['zone_to_geo_zones'] = $this->model_localisation_geo_zone->getZoneToGeoZones($this->request->get['geo_zone_id']);
+                $data['zones'] = json_encode($data['zone_to_geo_zones']);
+            }
+
+            $countries_ids = [];
+            foreach ($data['zone_to_geo_zones'] as $zone) {
+                $countries_ids[] = $zone['country_id'];
+            }
+
+            $unique_array = array_unique($countries_ids);
+
+            foreach ($data['countries'] as $country) {
+                foreach ($unique_array as $item) {
+                    if ($item == $country['country_id']) {
+                        $data['all_countries'][] = [
+                            'country_id' => $country['country_id'],
+                            'name' => $country['name'],
+                            'iso_code_2' => $country['iso_code_2'],
+                            'iso_code_3' => $country['iso_code_3'],
+                            'address_format' => $country['address_format'],
+                            'postcode_required' => $country['postcode_required'],
+                            'status' => $country['status'],
+                            'checked' => true,
+                        ];
+                    } else {
+                        if (!in_array($country['country_id'], $unique_array)){
+                            $data['all_countries'][] = [
+                                'country_id' => $country['country_id'],
+                                'name' => $country['name'],
+                                'iso_code_2' => $country['iso_code_2'],
+                                'iso_code_3' => $country['iso_code_3'],
+                                'address_format' => $country['address_format'],
+                                'postcode_required' => $country['postcode_required'],
+                                'status' => $country['status'],
+                                'checked' => false,
+                            ];
+                        }
+                    }
+                }
+            }
+//            die();
+
+            $duplicate_keys = array();
+            $tmp = array();
+
+            foreach ($data['all_countries'] as $key => $value) {
+                if (is_object($value)) {
+                    $value = (array)$value;
+                }
+
+                if (!in_array($value, $tmp)) {
+                    $tmp[] = $value;
+                } else {
+                    $duplicate_keys[] = $key;
+                }
+            }
+
+            foreach ($duplicate_keys as $key) {
+                unset($data['all_countries'][$key]);
+            }
+
+            $data['countries_ids'] = array_values($data['all_countries']);
         } else {
             $data['zone_to_geo_zones'] = 0;
         }

@@ -118,41 +118,9 @@ class ModelLocalisationGeoZone extends Model
 
     public function getZoneToGeoZones($geo_zone_id)
     {
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$geo_zone_id . "' GROUP BY country_id");
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$geo_zone_id . "'");
 
-        $result = $query->rows;
-        $items = [];
-        foreach ($result as $item) {
-            $zone_name = $this->db->query("SELECT name FROM " . DB_PREFIX . "zone WHERE zone_id = '" . (int)$item['zone_id'] . "'");
-            $zones = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE country_id = '" . (int)$item['country_id'] . "'");
-
-            $all_rows = [];
-            foreach ($zones->rows as $row) {
-                $zone_name_2 = $this->db->query("SELECT name FROM " . DB_PREFIX . "zone WHERE zone_id = '" . (int)$row['zone_id'] . "'");
-                $all_rows[] = [
-                    'zone_to_geo_zone_id' => $row['zone_to_geo_zone_id'],
-                    'country_id' => $row['country_id'],
-                    'zone_id' => $row['zone_id'],
-                    'zone_name' => $zone_name_2->row['name'],
-                    'geo_zone_id' => $row['geo_zone_id'],
-                    'date_added' => $row['date_added'],
-                    'date_modified' => $row['date_modified'],
-                ];
-            }
-
-            $items[] = [
-                'zone_to_geo_zone_id' => $item['zone_to_geo_zone_id'],
-                'country_id' => $item['country_id'],
-                'zone_id' => $item['zone_id'],
-                'zone_name' => $zone_name->row['name'],
-                'geo_zone_id' => $item['geo_zone_id'],
-                'date_added' => $item['date_added'],
-                'date_modified' => $item['date_modified'],
-                'zones' => $all_rows,
-            ];
-        }
-//
-        return $items;
+        return $query->rows;
     }
 
     public function getTotalZoneToGeoZoneByGeoZoneId($geo_zone_id)

@@ -64,6 +64,7 @@
                                 </div>
                                 <button id="check_all" type="button" class="btn btn-success">Check All</button>
                                 <button id="un_check_all" type="button" class="btn btn-warning">UnCheck All</button>
+                                <button id="get_country_checked_inputs" type="button" class="btn btn-primary">Show Selected</button>
                             </div>
                             <br>
                             <h4>{{ entry_zone }}</h4>
@@ -79,6 +80,7 @@
                                 </div>
                                 <button id="check_all_zone" type="button" class="btn btn-success">Check All</button>
                                 <button id="un_check_all_zone" type="button" class="btn btn-warning">UnCheck All</button>
+                                <button id="get_zones_checked_inputs" type="button" class="btn btn-primary">Show Selected</button>
                             </div>
                         </div>
                     </fieldset>
@@ -89,19 +91,33 @@
     <script type="text/javascript">
         $(document).ready(function () {
             html = '<ul id="all_countries">';
-            {% for country in countries %}
+            var checked = '';
             {% if zone_to_geo_zones == 0 %}
+            {% for country in countries %}
             html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>';
+            {% endfor %}
             {% else %}
-            {% for zone_to_geo_zone in zone_to_geo_zones %}
-            {% if zone_to_geo_zone.country_id == country.country_id %}
-            html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}" checked="checked"> {{ country.name|escape('js') }}</label></li>';
+            {% for country in countries_ids %}
+            {% if country.checked == true %}
+            checked = '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}" checked="checked"> {{ country.name|escape('js') }}</label></li>';
             {% else %}
-            html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>';
+            checked = '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>';
             {% endif %}
+            {# {% if zone_to_geo_zones == 0 %} #}
+            {# html += '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>'; #}
+            {# {% else %} #}
+            {# {% for country_id in countries_ids %} #}
+            {# {% if country_id == country.country_id %} #}
+            {# checked = '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}" checked="checked"> {{ country.name|escape('js') }}</label></li>'; #}
+            {# {% else %} #}
+            {# checked = '<li style="display: inline !important;"><label style="padding: 3px;"> <input type="checkbox" class="country_check_box" name="zone_to_geo_zone[' + {{ country.country_id }} +'][country_id]" value="{{ country.country_id }}"> {{ country.name|escape('js') }}</label></li>'; #}
+            {# {% endif %} #}
+            {# {% endfor %} #}
+            html += checked;
+            {# {% endif %} #}
             {% endfor %}
             {% endif %}
-            {% endfor %}
+
             html += '</ul>'
 
             $('#countries').append(html);
@@ -138,21 +154,68 @@
                 }
             });
 
-            $('#check_all').on('click', function (){
+            $('#get_country_checked_inputs').on('click', function () {
+                var countries = document.getElementById('all_countries');
+                var countries_li = countries.getElementsByTagName('li');
+                var countries_checkboxes = countries.getElementsByTagName('input');
+                if (this.className === 'btn btn-primary') {
+                    for (var i = 0; i < countries_checkboxes.length; i++) {
+                        if (countries_checkboxes[i].checked) {
+                            countries_li[i].style.display = "inline";
+                        } else {
+                            countries_li[i].style.display = "none";
+                        }
+                        $(this).removeClass('btn-primary');
+                        $(this).addClass('btn-danger');
+                    }
+                } else {
+                    for (var i = 0; i < countries_checkboxes.length; i++) {
+                        countries_li[i].style.display = "inline";
+                    }
+                    $(this).addClass('btn-primary');
+                    $(this).removeClass('btn-danger');
+                }
+            });
+
+            $('#get_zones_checked_inputs').on('click', function () {
+                var zones = document.getElementById('all_zones');
+                var zones_li = zones.getElementsByTagName('li');
+                var zones_checkboxes = zones.getElementsByTagName('input');
+                if (this.className === 'btn btn-primary') {
+                    for (var i = 0; i < zones_checkboxes.length; i++) {
+                        if (zones_checkboxes[i].checked) {
+                            zones_li[i].style.display = "inline";
+                        } else {
+                            zones_li[i].style.display = "none";
+                        }
+                        $(this).removeClass('btn-primary');
+                        $(this).addClass('btn-danger');
+                    }
+                } else {
+                    for (var i = 0; i < zones_checkboxes.length; i++) {
+                        zones_li[i].style.display = "inline";
+                    }
+                    $(this).addClass('btn-primary');
+                    $(this).removeClass('btn-danger');
+                }
+            });
+
+            $('#check_all').on('click', function () {
                 $('.country_check_box').prop('checked', true);
             });
 
-            $('#un_check_all').on('click', function (){
+            $('#un_check_all').on('click', function () {
                 $('.country_check_box').prop('checked', false);
             });
 
-            $('#check_all_zone').on('click', function (){
+            $('#check_all_zone').on('click', function () {
                 $('.zone_check_box').prop('checked', true);
             });
 
-            $('#un_check_all_zone').on('click', function (){
+            $('#un_check_all_zone').on('click', function () {
                 $('.zone_check_box').prop('checked', false);
             });
+
         });
 
         $(document).ready(function () {
@@ -171,9 +234,30 @@
                         },
                         success: function (json) {
                             html = '';
+                            var zones = '{{ zones }}';
+                            var not_checked_zones = [];
                             if (json['zone'] && json['zone'] != '') {
                                 for (i = 0; i < json['zone'].length; i++) {
-                                    html += '<li style="display: inline !important;" class="zone_country_' + json['zone'][i]['country_id'] + '"><label style="padding: 3px;"> <input class="zone_check_box" type="checkbox" name="zone_to_geo_zone[' + json['zone'][i]['country_id'] + '][zone_id][]" value="' + json['zone'][i]['zone_id'] + '" checked> ' + json['zone'][i]['name'] + '</label></li>';
+                                    {% for zone in zone_to_geo_zones %}
+                                    var zone_country_id = '{{ zone['country_id'] }}';
+                                    var zone_id = '{{ zone['zone_id'] }}';
+                                    if (zone_country_id == json['zone'][i]['country_id'] && zone_id == json['zone'][i]['zone_id']) {
+                                        html += '<li style="display: inline !important;" class="zone_country_' + json['zone'][i]['country_id'] + '"><label style="padding: 3px;"> <input class="zone_check_box" type="checkbox" name="zone_to_geo_zone[' + json['zone'][i]['country_id'] + '][zone_id][]" value="' + json['zone'][i]['zone_id'] + '" checked> ' + json['zone'][i]['name'] + '</label></li>';
+                                    } else {
+                                        if (!zones.includes(json['zone'][i]['zone_id'])) {
+                                            var zone = {
+                                                'country_id': json['zone'][i]['country_id'],
+                                                'zone_id': json['zone'][i]['zone_id'],
+                                                'zone_name': json['zone'][i]['name'],
+                                            };
+                                            not_checked_zones = [zone];
+                                        }
+                                    }
+                                    {% endfor %}
+
+                                    for (var j = 0; j < not_checked_zones.length; j++) {
+                                        html += '<li style="display: inline !important;" class="zone_country_' + not_checked_zones[j]['country_id'] + '"><label style="padding: 3px;"> <input class="zone_check_box" type="checkbox" name="zone_to_geo_zone[' + not_checked_zones[j]['country_id'] + '][zone_id][]" value="' + not_checked_zones[j]['zone_id'] + '"> ' + not_checked_zones[j]['zone_name'] + '</label></li>';
+                                    }
                                 }
                             }
 
